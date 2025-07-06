@@ -7,16 +7,27 @@ import time
 import os
 from socket import error as socket_error
 
-# Adafruit Library
-import Adafruit_GPIO.SPI as SPI
-import Adafruit_SSD1306
+# Try to import required libraries with error handling
+try:
+    # Adafruit Library
+    import Adafruit_GPIO.SPI as SPI
+    import Adafruit_SSD1306
+except ImportError as e:
+    print(f"Error importing Adafruit libraries: {e}")
+    print("Please install: pip install adafruit-circuitpython-ssd1306 adafruit-gpio")
+    sys.exit(1)
 
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
 
-# MPD Clint
-from mpd import MPDClient, MPDError, CommandError, ConnectionError
+try:
+    # MPD Client
+    from mpd import MPDClient, MPDError, CommandError, ConnectionError
+except ImportError as e:
+    print(f"Error importing MPD library: {e}")
+    print("Please install: pip install python-mpd2")
+    sys.exit(1)
 
 # Python 3 uses UTF-8 by default, no reload needed
 
@@ -28,7 +39,21 @@ SPI_PORT = 0
 SPI_DEVICE = 0
 
 # 128x64 display with hardware I2C:
-disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST)
+# Add platform detection handling to avoid RuntimeError
+try:
+    disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST)
+except RuntimeError as e:
+    print(f"Platform detection failed: {e}")
+    print("Trying alternative initialization...")
+    # Try with explicit I2C address
+    try:
+        disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST, i2c_address=0x3C)
+    except:
+        try:
+            disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST, i2c_address=0x3D)
+        except:
+            print("Could not initialize display. Please check hardware connections.")
+            sys.exit(1)
 
 # MPD Client
 class MPDConnect(object):
@@ -133,10 +158,11 @@ def main():
     image = Image.new('1', (width, height))
 
     # Load default font.
-    font_artist = ImageFont.truetype('/home/pi/MoodeAudio-OLED/Arial-Unicode-Bold.ttf', 14)
-    font_title = ImageFont.truetype('/home/pi/MoodeAudio-OLED/Arial-Unicode-Regular.ttf', 13)
-    font_info = ImageFont.truetype('/home/pi/MoodeAudio-OLED/Verdana-Italic.ttf', 10)
-    font_time = ImageFont.truetype('/home/pi/MoodeAudio-OLED/Verdana.ttf', 13)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    font_artist = ImageFont.truetype(os.path.join(script_dir, 'Arial-Unicode-Bold.ttf'), 14)
+    font_title = ImageFont.truetype(os.path.join(script_dir, 'Arial-Unicode-Regular.ttf'), 13)
+    font_info = ImageFont.truetype(os.path.join(script_dir, 'Verdana-Italic.ttf'), 10)
+    font_time = ImageFont.truetype(os.path.join(script_dir, 'Verdana.ttf'), 13)
 
     # Create drawing object.
     draw = ImageDraw.Draw(image)
@@ -169,7 +195,12 @@ def main():
         audio = info['audio_info']
 
         # Position text of Artist
-        artwd, artz = draw.textsize(unicode(artist), font=font_artist)
+        try:
+            artwd, artz = draw.textsize(artist, font=font_artist)
+        except AttributeError:
+            # For newer PIL versions, use textbbox instead of textsize
+            bbox = draw.textbbox((0, 0), artist, font=font_artist)
+            artwd, artz = bbox[2] - bbox[0], bbox[3] - bbox[1]
 
         # Artist animate
         if artwd < width:
@@ -182,7 +213,12 @@ def main():
             #    artoffset = 100
 
             # Position text of Title
-            titwd,titz = draw.textsize(unicode(title), font=font_title)
+            try:
+                titwd,titz = draw.textsize(title, font=font_title)
+            except AttributeError:
+                # For newer PIL versions, use textbbox instead of textsize
+                bbox = draw.textbbox((0, 0), title, font=font_title)
+                titwd, titz = bbox[2] - bbox[0], bbox[3] - bbox[1]
 
         # Title animate
         if titwd < width:
@@ -195,7 +231,12 @@ def main():
                 titoffset = 100
 
             # Position text of audio infomation
-            audiox,audioy = draw.textsize(audio, font=font_info)
+            try:
+                audiox,audioy = draw.textsize(audio, font=font_info)
+            except AttributeError:
+                # For newer PIL versions, use textbbox instead of textsize
+                bbox = draw.textbbox((0, 0), audio, font=font_info)
+                audiox, audioy = bbox[2] - bbox[0], bbox[3] - bbox[1]
             if audiox < 126:
                 audiox,audioy = divmod((126-audiox),2)
             else:
@@ -208,8 +249,8 @@ def main():
                 draw.text((75,50), "vol: " +  str(vol) , font=font_time, fill=255)
             else:
                 # Draw text.
-                draw.text((artx,top), unicode(artist), font=font_artist, fill=255)
-                draw.text((titx,18), unicode(title), font=font_title, fill=255)
+                draw.text((artx,top), artist, font=font_artist, fill=255)
+                draw.text((titx,18), title, font=font_title, fill=255)
                 draw.text((audiox,35), audio, font=font_info, fill=255)
                 draw.text((padding,50), eltime, font=font_time, fill=255)
                 draw.text((75,50), "vol: " +  str(vol) , font=font_time, fill=255)

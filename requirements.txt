@@ -1,0 +1,4 @@
+adafruit-circuitpython-ssd1306
+adafruit-gpio
+python-mpd2
+Pillow
