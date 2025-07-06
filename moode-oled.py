@@ -171,57 +171,57 @@ def main():
         audio = info['audio_info']
 
         # Position text of Artist
-        artwd,artz = draw.textsize(unicode(artist), font=font_artist)
+        artwd, artz = draw.textsize(unicode(artist), font=font_artist)
 
-	# Artist animate
-	if artwd < width:
+        # Artist animate
+        if artwd < width:
             artx = (width - artwd) / 2
-	    artoffset = padding
+            artoffset = padding
         else:
             artx = artoffset
             #artoffset -= animate
             #if (artwd - (width + abs(artx))) < -120:
             #    artoffset = 100
 
-        # Position text of Title
-        titwd,titz = draw.textsize(unicode(title), font=font_title)
+            # Position text of Title
+            titwd,titz = draw.textsize(unicode(title), font=font_title)
 
-	# Title animate
-	if titwd < width:
+        # Title animate
+        if titwd < width:
             titx = (width - titwd) / 2
-	    titoffset = padding
+            titoffset = padding
         else:
             titx = titoffset
             titoffset -= animate
-	    if (titwd - (width + abs(titx))) < -120:
-		titoffset = 100
+            if (titwd - (width + abs(titx))) < -120:
+                titoffset = 100
 
-        # Position text of audio infomation
-        audiox,audioy = draw.textsize(audio, font=font_info)
-        if audiox < 126:
-            audiox,audioy = divmod((126-audiox),2)
-        else:
-            audiox = 2
+            # Position text of audio infomation
+            audiox,audioy = draw.textsize(audio, font=font_info)
+            if audiox < 126:
+                audiox,audioy = divmod((126-audiox),2)
+            else:
+                audiox = 2
 
-        if state == 'stop':
-            # Draw text
-            draw.text((30,15), "Music Stop", font=font_title, fill=255)
-            draw.text((padding,50), eltime, font=font_time, fill=255)
-            draw.text((75,50), "vol: " +  str(vol) , font=font_time, fill=255)
-        else:
-            # Draw text.
-            draw.text((artx,top), unicode(artist), font=font_artist, fill=255)
-            draw.text((titx,18), unicode(title), font=font_title, fill=255)
-            draw.text((audiox,35), audio, font=font_info, fill=255)
-            draw.text((padding,50), eltime, font=font_time, fill=255)
-            draw.text((75,50), "vol: " +  str(vol) , font=font_time, fill=255)
+            if state == 'stop':
+                # Draw text
+                draw.text((30,15), "Music Stop", font=font_title, fill=255)
+                draw.text((padding,50), eltime, font=font_time, fill=255)
+                draw.text((75,50), "vol: " +  str(vol) , font=font_time, fill=255)
+            else:
+                # Draw text.
+                draw.text((artx,top), unicode(artist), font=font_artist, fill=255)
+                draw.text((titx,18), unicode(title), font=font_title, fill=255)
+                draw.text((audiox,35), audio, font=font_info, fill=255)
+                draw.text((padding,50), eltime, font=font_time, fill=255)
+                draw.text((75,50), "vol: " +  str(vol) , font=font_time, fill=255)
 
-        # Draw the image buffer.
-        disp.image(image)
-        disp.display()
+            # Draw the image buffer.
+            disp.image(image)
+            disp.display()
 
-        # Pause briefly before drawing next frame.
-        time.sleep(1)
+            # Pause briefly before drawing next frame.
+            time.sleep(1)
 
 if __name__ == "__main__":
     main()
