@@ -18,9 +18,7 @@ from PIL import ImageDraw
 # MPD Clint
 from mpd import MPDClient, MPDError, CommandError, ConnectionError
 
-# System UTF-8
-reload(sys)
-sys.setdefaultencoding('utf-8')
+# Python 3 uses UTF-8 by default, no reload needed
 
 # Raspberry Pi pin configuration:
 RST = 24
